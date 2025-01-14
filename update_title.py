@@ -7,8 +7,8 @@ from oauth2client.tools import run_flow, argparser
 # ------------------------------------------------------------------
 # 1. FILL IN YOUR OAUTH CREDENTIALS FROM THE GOOGLE CLOUD CONSOLE
 # ------------------------------------------------------------------
-CLIENT_ID = "xx"
-CLIENT_SECRET = "xx"
+CLIENT_ID = "914043930815-0u788ic1d823jgcjooo5n54pj6fgg9rj.apps.googleusercontent.com"
+CLIENT_SECRET = "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"
 
 # The scope we need for managing YouTube videos and comments
 OAUTH_SCOPE = "https://www.googleapis.com/auth/youtube.force-ssl"
