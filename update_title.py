@@ -20,7 +20,7 @@ REDIRECT_URI = "urn:ietf:wg:oauth:2.0:oob"
 # 2. SPECIFY THE YOUTUBE VIDEO ID YOU WANT TO UPDATE
 #    (e.g., "abcd1234EfG" part from "https://www.youtube.com/watch?v=abcd1234EfG")
 # ------------------------------------------------------------------
-VIDEO_ID = "VIDEO_ID_HERE"
+VIDEO_ID = "OXhIfc3ncaM"
 
 
 def get_authenticated_service():
