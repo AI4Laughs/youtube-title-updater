@@ -1,0 +1,33 @@
+name: Update YouTube Title
+
+on:
+  # 1) Schedule: runs every 5 minutes
+  schedule:
+    - cron: "*/5 * * * *"
+  # 2) Manual: allows you to trigger it in the Actions tab
+  workflow_dispatch:
+
+jobs:
+  run_script:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install google-api-python-client oauth2client
+
+      - name: Create oauth2.json from secret
+        # Recreates oauth2.json from your GitHub secret
+        run: echo "${{ secrets.OAUTH2_JSON }}" > oauth2.json
+
+      - name: Run script
+        run: python update_title.py
