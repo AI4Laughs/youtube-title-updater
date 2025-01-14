@@ -24,7 +24,7 @@ OAUTH_SCOPE = "https://www.googleapis.com/auth/youtube.force-ssl"
 REDIRECT_URI = "urn:ietf:wg:oauth:2.0:oob"
 
 # The ID of the video you want to update
-VIDEO_ID = "OXhIfc3ncaM"
+VIDEO_ID = "acEeXEsoeeI"
 
 def get_authenticated_service():
     """
