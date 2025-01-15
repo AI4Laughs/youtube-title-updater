@@ -39,9 +39,9 @@ def get_authenticated_service():
     return build("youtube", "v3", credentials=credentials)
 
 def main():
-    youtube = get_authenticated_service()
-
     try:
+        youtube = get_authenticated_service()
+
         # 1. Fetch the latest top-level comment from your video
         comment_request = youtube.commentThreads().list(
             part="snippet",
