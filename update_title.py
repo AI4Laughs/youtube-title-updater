@@ -104,8 +104,10 @@ def main():
 
     except HttpError as e:
         print(f"An HTTP error occurred: {e}")
+
     except Exception as e:
         print(f"An unexpected error occurred: {e}")
+
     finally:
         print("Script execution completed.")
 
