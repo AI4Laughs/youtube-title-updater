@@ -33,9 +33,16 @@ jobs:
       - name: Debug oauth2.json
         run: cat oauth2.json
 
-      # Debug Step: Print environment variables
-      - name: Debug environment variables
-        run: printenv | grep MY_
+      # Debug Step: Print secrets as environment variables
+      - name: Debug secrets
+        env:
+          MY_CLIENT_ID: ${{ secrets.MY_CLIENT_ID }}
+          MY_CLIENT_SECRET: ${{ secrets.MY_CLIENT_SECRET }}
+          MY_VIDEO_ID: ${{ secrets.MY_VIDEO_ID }}
+        run: |
+          echo "MY_CLIENT_ID=${MY_CLIENT_ID}"
+          echo "MY_CLIENT_SECRET=${MY_CLIENT_SECRET}"
+          echo "MY_VIDEO_ID=${MY_VIDEO_ID}"
 
       # Step 5: Run the Python script
       - name: Run Python script
