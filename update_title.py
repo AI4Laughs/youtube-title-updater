@@ -10,6 +10,10 @@ CLIENT_ID = os.getenv("MY_CLIENT_ID")
 CLIENT_SECRET = os.getenv("MY_CLIENT_SECRET")
 VIDEO_ID = os.getenv("MY_VIDEO_ID")
 
+# Debugging: Print environment variables
+print(f"CLIENT_ID: {CLIENT_ID}")
+print(f"VIDEO_ID: {VIDEO_ID}")
+
 # YouTube Data API scope
 OAUTH_SCOPE = "https://www.googleapis.com/auth/youtube.force-ssl"
 REDIRECT_URI = "urn:ietf:wg:oauth:2.0:oob"  # Local/desktop OAuth flow
@@ -94,12 +98,3 @@ def main():
                 }
             }
         )
-        update_request.execute()
-
-        print(f"Success! Updated video title to:\n{new_title}")
-
-    except HttpError as e:
-        print(f"An HTTP error occurred: {e}")
-
-if __name__ == "__main__":
-    main()
