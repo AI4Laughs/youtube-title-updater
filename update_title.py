@@ -5,26 +5,14 @@ from oauth2client.client import OAuth2WebServerFlow
 from oauth2client.file import Storage
 from oauth2client.tools import run_flow, argparser
 
-# --------------------------------------------------------------------
-# If you're reading secrets from GitHub Actions environment variables,
-# uncomment these lines and add them in your .github/workflows .yml:
-#
-# CLIENT_ID = os.getenv("MY_CLIENT_ID")
-# CLIENT_SECRET = os.getenv("MY_CLIENT_SECRET")
-#
-# Otherwise, just hardcode them here if you're testing locally:
-CLIENT_ID = "914043930815-0u788ic1d823jgcjooo5n54pj6fgg9rj.apps.googleusercontent.com"
-CLIENT_SECRET = "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"
-# --------------------------------------------------------------------
+# Read secrets from environment variables
+CLIENT_ID = os.getenv("MY_CLIENT_ID")
+CLIENT_SECRET = os.getenv("MY_CLIENT_SECRET")
+VIDEO_ID = os.getenv("MY_VIDEO_ID")
 
 # YouTube Data API scope
 OAUTH_SCOPE = "https://www.googleapis.com/auth/youtube.force-ssl"
-
-# For local/desktop OAuth flow
-REDIRECT_URI = "urn:ietf:wg:oauth:2.0:oob"
-
-# The ID of the video you want to update
-VIDEO_ID = "acEeXEsoeeI"
+REDIRECT_URI = "urn:ietf:wg:oauth:2.0:oob"  # Local/desktop OAuth flow
 
 def get_authenticated_service():
     """
@@ -63,10 +51,7 @@ def main():
             print("No comments found on the video.")
             return
 
-        # Grab the snippet of the top-level comment
         top_comment_snippet = comment_response["items"][0]["snippet"]["topLevelComment"]["snippet"]
-
-        # Instead of channel ID, we use the display name:
         commenter_display_name = top_comment_snippet.get("authorDisplayName", "UnknownUser")
 
         # 2. Get your own channel’s subscriber count
