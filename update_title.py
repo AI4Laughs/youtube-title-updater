@@ -98,3 +98,16 @@ def main():
                 }
             }
         )
+        update_request.execute()
+
+        print(f"Success! Updated video title to:\n{new_title}")
+
+    except HttpError as e:
+        print(f"An HTTP error occurred: {e}")
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
+    finally:
+        print("Script execution completed.")
+
+if __name__ == "__main__":
+    main()
