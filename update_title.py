@@ -6,19 +6,24 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 import json
 
-# If modifying these scopes, delete the file token.json.
+# Constants
 SCOPES = ['https://www.googleapis.com/auth/youtube.force-ssl']
 VIDEO_ID = os.getenv('MY_VIDEO_ID')
 
 def get_authenticated_service():
-    """Get an authenticated YouTube service object."""
+    """Set up YouTube API authentication."""
     creds = None
     
-    # Load the OAuth credentials from the environment
-    if os.path.exists('oauth2.json'):
-        oauth_info = json.load(open('oauth2.json'))
-        creds = Credentials.from_authorized_user_info(oauth_info, SCOPES)
+    # Load credentials from oauth2.json
+    try:
+        with open('oauth2.json', 'r') as f:
+            creds_data = json.load(f)
+            creds = Credentials.from_authorized_user_info(creds_data, SCOPES)
+    except Exception as e:
+        print(f"Error loading credentials: {e}")
+        return None
 
+    # If credentials are invalid or expired, raise error
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
             try:
@@ -27,18 +32,22 @@ def get_authenticated_service():
                 print(f"Error refreshing credentials: {e}")
                 return None
         else:
-            print("Error: No valid credentials found")
+            print("Invalid credentials. Please ensure oauth2.json is properly configured.")
             return None
 
     try:
+        # Build the service
         return build('youtube', 'v3', credentials=creds)
     except Exception as e:
         print(f"Error building service: {e}")
         return None
 
 def main():
-    if not VIDEO_ID:
-        print("Error: VIDEO_ID environment variable not set")
+    # Validate environment variables
+    required_vars = ['MY_VIDEO_ID']
+    missing_vars = [var for var in required_vars if not os.getenv(var)]
+    if missing_vars:
+        print(f"Missing required environment variables: {', '.join(missing_vars)}")
         return
 
     print("Starting YouTube API authentication...")
@@ -65,11 +74,11 @@ def main():
             print("No comments found on the video.")
             return
             
-        # Extract comment details
+        # Get commenter name
         top_comment_snippet = comment_response["items"][0]["snippet"]["topLevelComment"]["snippet"]
         commenter_display_name = top_comment_snippet.get("authorDisplayName", "UnknownUser")
         
-        # Get channel statistics
+        # Get subscriber count
         channel_request = youtube.channels().list(
             part="statistics",
             mine=True
@@ -85,7 +94,7 @@ def main():
         # Create new title
         new_title = f"{commenter_display_name} is my Favourite Person they helped me gain {subscriber_count} subs"
         
-        # Get current video details to preserve categoryId
+        # Get current video details
         video_request = youtube.videos().list(
             part="snippet",
             id=VIDEO_ID
@@ -96,9 +105,9 @@ def main():
             print("Video not found or insufficient permissions.")
             return
             
-        # Preserve the existing snippet data
+        # Preserve existing snippet data
         current_snippet = video_response["items"][0]["snippet"]
-        current_snippet["title"] = new_title  # Update only the title
+        current_snippet["title"] = new_title
         
         # Update the video
         update_request = youtube.videos().update(
@@ -114,7 +123,7 @@ def main():
     except HttpError as e:
         print(f"An HTTP error occurred: {e.resp.status} {e.content}")
     except Exception as e:
-        print(f"An unexpected error occurred: {type(e).__name__} - {str(e)}")
+        print(f"An unexpected error occurred: {type(e).__name__}: {str(e)}")
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
