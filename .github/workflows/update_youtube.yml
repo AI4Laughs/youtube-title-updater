@@ -18,14 +18,49 @@ jobs:
       
       - name: Install dependencies
         run: |
+          python -m pip install --upgrade pip
           pip install --upgrade google-api-python-client google-auth-oauthlib oauth2client
+          pip install --upgrade google-auth-httplib2
       
-      - name: Create oauth2.json
+      - name: Verify secrets exist
+        run: |
+          if [ -z "${{ secrets.OAUTH_JSON }}" ]; then
+            echo "Error: OAUTH_JSON secret is not set"
+            exit 1
+          fi
+          if [ -z "${{ secrets.MY_VIDEO_ID }}" ]; then
+            echo "Error: MY_VIDEO_ID secret is not set"
+            exit 1
+          fi
+          if [ -z "${{ secrets.MY_SHORT_ID }}" ]; then
+            echo "Error: MY_SHORT_ID secret is not set"
+            exit 1
+          fi
+      
+      - name: Create and verify oauth2.json
         run: |
           echo "${{ secrets.OAUTH_JSON }}" > oauth2.json
+          if [ ! -s oauth2.json ]; then
+            echo "Error: oauth2.json is empty"
+            exit 1
+          fi
+          echo "oauth2.json created successfully"
+          # Print first few characters to verify format (avoid printing sensitive data)
+          echo "File starts with: $(head -c 20 oauth2.json)..."
       
-      - name: Run Python script
+      - name: Run Python script with debug output
         env:
           MY_VIDEO_ID: ${{ secrets.MY_VIDEO_ID }}
           MY_SHORT_ID: ${{ secrets.MY_SHORT_ID }}
-        run: python update_title.py
+          PYTHONUNBUFFERED: 1
+        run: |
+          echo "Starting script execution..."
+          echo "Video ID length: ${#MY_VIDEO_ID}"
+          echo "Short ID length: ${#MY_SHORT_ID}"
+          python -u update_title.py 2>&1
+          EXIT_CODE=$?
+          echo "Script execution completed with exit code: $EXIT_CODE"
+          if [ $EXIT_CODE -ne 0 ]; then
+            echo "Error: Script failed"
+            exit 1
+          fi
