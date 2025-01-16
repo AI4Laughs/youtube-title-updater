@@ -7,35 +7,38 @@ from googleapiclient.errors import HttpError
 
 # Constants
 SCOPES = ['https://www.googleapis.com/auth/youtube.force-ssl']
-VIDEO_ID = os.getenv('MY_VIDEO_ID')  # Ensure this is set in your environment
+VIDEO_ID = os.getenv('MY_VIDEO_ID')  # Ensure this is set in your GitHub Secrets
 
 def get_authenticated_service():
     """Set up YouTube API authentication."""
     creds = None
     try:
         # Load credentials from oauth2.json
+        if not os.path.exists('oauth2.json'):
+            print("Error: oauth2.json not found.")
+            return None
+
         with open('oauth2.json', 'r') as f:
             creds_data = json.load(f)
             creds = Credentials.from_authorized_user_info(creds_data, SCOPES)
-        
-        # Refresh credentials if needed
+
+        # Refresh credentials if expired
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
 
         return build('youtube', 'v3', credentials=creds)
 
-    except FileNotFoundError:
-        print("Error: oauth2.json not found.")
     except Exception as e:
         print(f"Error during authentication: {e}")
-
-    return None
+        return None
 
 def main():
+    # Check if VIDEO_ID is set
     if not VIDEO_ID:
         print("Error: VIDEO_ID environment variable not set.")
         return
 
+    print("Starting YouTube API authentication...")
     youtube = get_authenticated_service()
     if not youtube:
         print("Failed to authenticate with YouTube API.")
