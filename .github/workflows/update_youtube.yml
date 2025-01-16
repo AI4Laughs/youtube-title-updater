@@ -1,40 +1,30 @@
-name: Test YouTube API Access
-on: [workflow_dispatch]
+name: Update YouTube Title
+on:
+  schedule:
+    - cron: "*/5 * * * *"  # Runs every 5 minutes
+  workflow_dispatch:  # Allows manual triggering
 
 jobs:
-  test-api:
+  update-title:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-
+      
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: "3.x"
-
+      
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip install --upgrade google-api-python-client google-auth-oauthlib
-
-      - name: Print secret lengths
-        run: |
-          echo "OAUTH_JSON length: ${#OAUTH_JSON}"
-          echo "MY_VIDEO_ID length: ${#MY_VIDEO_ID}"
-          echo "MY_SHORT_ID length: ${#MY_SHORT_ID}"
-        env:
-          OAUTH_JSON: ${{ secrets.OAUTH_JSON }}
-          MY_VIDEO_ID: ${{ secrets.MY_VIDEO_ID }}
-          MY_SHORT_ID: ${{ secrets.MY_SHORT_ID }}
-
+          pip install --upgrade google-api-python-client google-auth-oauthlib oauth2client
+      
       - name: Create oauth2.json
         run: |
           echo "${{ secrets.OAUTH_JSON }}" > oauth2.json
-          echo "oauth2.json size: $(wc -c < oauth2.json) bytes"
-
-      - name: Run test script
+      
+      - name: Run Python script
         env:
           MY_VIDEO_ID: ${{ secrets.MY_VIDEO_ID }}
-          MY_SHORT_ID: ${{ secrets.MY_SHORT_ID }}
-        run: python read_test.py
+        run: python update_title.py
