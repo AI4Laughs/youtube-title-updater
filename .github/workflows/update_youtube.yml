@@ -21,60 +21,44 @@ jobs:
           python -m pip install --upgrade pip
           pip install --upgrade google-api-python-client google-auth-oauthlib oauth2client
           pip install --upgrade google-auth-httplib2
-          pip list
 
-      - name: Debug Environment
+      - name: Create debug script
         run: |
-          echo "Python version:"
-          python --version
-          echo "Working directory:"
-          pwd
-          echo "Directory contents:"
-          ls -la
-          echo "Environment variables (sanitized):"
-          env | grep -v -i "secret" | grep -v -i "token" | grep -v -i "password"
-
-      - name: Create oauth2.json with debug
-        run: |
-          echo "Creating oauth2.json..."
-          echo "${{ secrets.OAUTH_JSON }}" > oauth2.json
-          echo "File created. Size:"
-          ls -l oauth2.json
-          echo "JSON validity check:"
-          python -c "import json; json.load(open('oauth2.json'))" && echo "JSON is valid" || echo "JSON is invalid"
-
-      - name: Add debug code
-        run: |
-          echo '
+          cat > debug_check.py << 'EOL'
           import os
           import json
           import sys
           
-          print("Script starting...")
+          print("=== Debug Information ===")
           print(f"Python version: {sys.version}")
+          print("\nEnvironment Variables:")
+          print(f"MY_VIDEO_ID present: {'MY_VIDEO_ID' in os.environ}")
+          print(f"MY_SHORT_ID present: {'MY_SHORT_ID' in os.environ}")
           
-          print("\nChecking environment variables:")
-          print(f"MY_VIDEO_ID exists: {'MY_VIDEO_ID' in os.environ}")
-          print(f"MY_SHORT_ID exists: {'MY_SHORT_ID' in os.environ}")
-          
-          print("\nChecking oauth2.json:")
           try:
-              with open("oauth2.json") as f:
+              with open('oauth2.json', 'r') as f:
                   data = json.load(f)
-                  print("oauth2.json is valid JSON")
+                  print("\nOAuth2 JSON:")
                   print(f"Keys present: {list(data.keys())}")
           except Exception as e:
-              print(f"Error reading oauth2.json: {e}")
+              print(f"\nError reading oauth2.json: {e}")
           
-          print("\nOriginal script follows:\n")
-          ' | cat - update_title.py > temp && mv temp update_title.py
+          print("\n=== End Debug Info ===\n")
+          EOL
 
-      - name: Run script with debug output
+      - name: Create oauth2.json
+        run: |
+          echo "${{ secrets.OAUTH_JSON }}" > oauth2.json
+          
+      - name: Run debug check
+        env:
+          MY_VIDEO_ID: ${{ secrets.MY_VIDEO_ID }}
+          MY_SHORT_ID: ${{ secrets.MY_SHORT_ID }}
+        run: python debug_check.py
+
+      - name: Run update script
         env:
           MY_VIDEO_ID: ${{ secrets.MY_VIDEO_ID }}
           MY_SHORT_ID: ${{ secrets.MY_SHORT_ID }}
           PYTHONUNBUFFERED: "1"
-        run: |
-          echo "=== Starting Python script execution ==="
-          python -u update_title.py
-          echo "=== Python script execution completed ==="
+        run: python update_title.py
