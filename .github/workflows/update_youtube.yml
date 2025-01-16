@@ -1,8 +1,8 @@
 name: Update YouTube Titles
 on:
   schedule:
-    - cron: "*/5 * * * *"  # Runs every 5 minutes
-  workflow_dispatch:  # Allows manual triggering
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
 
 jobs:
   update-titles:
@@ -10,57 +10,71 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-      
+
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: "3.x"
-      
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install --upgrade google-api-python-client google-auth-oauthlib oauth2client
           pip install --upgrade google-auth-httplib2
-      
-      - name: Verify secrets exist
+          pip list
+
+      - name: Debug Environment
         run: |
-          if [ -z "${{ secrets.OAUTH_JSON }}" ]; then
-            echo "Error: OAUTH_JSON secret is not set"
-            exit 1
-          fi
-          if [ -z "${{ secrets.MY_VIDEO_ID }}" ]; then
-            echo "Error: MY_VIDEO_ID secret is not set"
-            exit 1
-          fi
-          if [ -z "${{ secrets.MY_SHORT_ID }}" ]; then
-            echo "Error: MY_SHORT_ID secret is not set"
-            exit 1
-          fi
-      
-      - name: Create and verify oauth2.json
+          echo "Python version:"
+          python --version
+          echo "Working directory:"
+          pwd
+          echo "Directory contents:"
+          ls -la
+          echo "Environment variables (sanitized):"
+          env | grep -v -i "secret" | grep -v -i "token" | grep -v -i "password"
+
+      - name: Create oauth2.json with debug
         run: |
+          echo "Creating oauth2.json..."
           echo "${{ secrets.OAUTH_JSON }}" > oauth2.json
-          if [ ! -s oauth2.json ]; then
-            echo "Error: oauth2.json is empty"
-            exit 1
-          fi
-          echo "oauth2.json created successfully"
-          # Print first few characters to verify format (avoid printing sensitive data)
-          echo "File starts with: $(head -c 20 oauth2.json)..."
-      
-      - name: Run Python script with debug output
+          echo "File created. Size:"
+          ls -l oauth2.json
+          echo "JSON validity check:"
+          python -c "import json; json.load(open('oauth2.json'))" && echo "JSON is valid" || echo "JSON is invalid"
+
+      - name: Add debug code
+        run: |
+          echo '
+          import os
+          import json
+          import sys
+          
+          print("Script starting...")
+          print(f"Python version: {sys.version}")
+          
+          print("\nChecking environment variables:")
+          print(f"MY_VIDEO_ID exists: {'MY_VIDEO_ID' in os.environ}")
+          print(f"MY_SHORT_ID exists: {'MY_SHORT_ID' in os.environ}")
+          
+          print("\nChecking oauth2.json:")
+          try:
+              with open("oauth2.json") as f:
+                  data = json.load(f)
+                  print("oauth2.json is valid JSON")
+                  print(f"Keys present: {list(data.keys())}")
+          except Exception as e:
+              print(f"Error reading oauth2.json: {e}")
+          
+          print("\nOriginal script follows:\n")
+          ' | cat - update_title.py > temp && mv temp update_title.py
+
+      - name: Run script with debug output
         env:
           MY_VIDEO_ID: ${{ secrets.MY_VIDEO_ID }}
           MY_SHORT_ID: ${{ secrets.MY_SHORT_ID }}
-          PYTHONUNBUFFERED: 1
+          PYTHONUNBUFFERED: "1"
         run: |
-          echo "Starting script execution..."
-          echo "Video ID length: ${#MY_VIDEO_ID}"
-          echo "Short ID length: ${#MY_SHORT_ID}"
-          python -u update_title.py 2>&1
-          EXIT_CODE=$?
-          echo "Script execution completed with exit code: $EXIT_CODE"
-          if [ $EXIT_CODE -ne 0 ]; then
-            echo "Error: Script failed"
-            exit 1
-          fi
+          echo "=== Starting Python script execution ==="
+          python -u update_title.py
+          echo "=== Python script execution completed ==="
