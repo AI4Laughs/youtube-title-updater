@@ -1,4 +1,5 @@
 name: Update YouTube Title
+
 on:
   schedule:
     - cron: "*/5 * * * *"  # Runs every 5 minutes
@@ -14,15 +15,22 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.x"
+          python-version: "3.12"
       
       - name: Install dependencies
         run: |
-          pip install --upgrade google-api-python-client google-auth-oauthlib oauth2client
+          python -m pip install --upgrade pip
+          pip install google-api-python-client google-auth-oauthlib google-auth-httplib2
       
       - name: Create oauth2.json
         run: |
-          echo "${{ secrets.OAUTH_JSON }}" > oauth2.json
+          echo '${{ secrets.OAUTH_JSON }}' > oauth2.json
+      
+      - name: Debug oauth2.json
+        run: cat oauth2.json
+      
+      - name: Debug environment variables
+        run: printenv | grep MY_
       
       - name: Run Python script
         env:
