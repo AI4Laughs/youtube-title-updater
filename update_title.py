@@ -95,7 +95,7 @@ def update_video_title(youtube, video_id, is_short=False):
                 return False
                 
             view_count = format_view_count(video_stats.get("viewCount", "0"))
-            new_title = f"This video has {view_count} views thanks to {commenter_display_name} #shorts"
+            new_title = f"This Short has {view_count} views thanks to {commenter_display_name} #shorts"
         else:
             # Get subscriber count for regular video
             channel_request = youtube.channels().list(
