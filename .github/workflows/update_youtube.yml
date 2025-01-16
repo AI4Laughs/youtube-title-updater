@@ -30,7 +30,8 @@ jobs:
         run: cat oauth2.json
       
       - name: Debug environment variables
-        run: printenv | grep MY_
+        run: |
+          printenv | grep MY_ || echo "No MY_ environment variables found."
       
       - name: Run Python script
         env:
